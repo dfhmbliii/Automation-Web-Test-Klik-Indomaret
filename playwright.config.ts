@@ -40,7 +40,9 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // Pakai Chrome asli agar lebih sulit terdeteksi Cloudflare
         channel: 'chrome',
-        headless: false,
+        // Lokal: headed (perlu melewati challenge Cloudflare)
+        // CI (Linux, tanpa layar): wajib headless agar Chrome bisa jalan
+        headless: !process.env.CI,
         viewport: { width: 1280, height: 720 },
         launchOptions: {
           args: ['--disable-blink-features=AutomationControlled'],
