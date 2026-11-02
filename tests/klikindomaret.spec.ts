@@ -38,7 +38,7 @@ test('Automation Klik Indomaret - Tambah Madu ke Keranjang', async ({ page }) =>
 
   // 3. Navigasi langsung ke sub-kategori Madu
   await page.goto('https://www.klikindomaret.com/xpress/category/makanan/sarapan-selai/madu', {
-    waitUntil: 'domcontentloaded', f
+    waitUntil: 'domcontentloaded', 
   });
   await tungguLolosCloudflare(page);
   await page.waitForTimeout(3000);
