@@ -42,7 +42,7 @@ export default defineConfig({
         channel: 'chrome',
         // Lokal: headed (perlu melewati challenge Cloudflare)
         // CI (Linux, tanpa layar): wajib headless agar Chrome bisa jalan
-        headless: !process.env.CI,
+        headless: !!process.env.CI,
         viewport: { width: 1280, height: 720 },
         launchOptions: {
           args: ['--disable-blink-features=AutomationControlled'],
