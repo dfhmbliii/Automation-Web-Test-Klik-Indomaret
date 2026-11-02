@@ -20,8 +20,6 @@ test('Automation Klik Indomaret - Tambah Madu ke Keranjang', async ({ page }) =>
 
   // 1. Akses halaman utama Klik Indomaret
   await page.goto('https://www.klikindomaret.com/', { waitUntil: 'domcontentloaded' });
-
-  // Tunggu challenge Cloudflare selesai (halaman nyata baru muncul setelah ini)
   await tungguLolosCloudflare(page);
   await page.waitForSelector('text="Makanan"', { timeout: 60000 });
 
@@ -32,45 +30,50 @@ test('Automation Klik Indomaret - Tambah Madu ke Keranjang', async ({ page }) =>
     await closePopUp.click().catch(() => {});
   }
 
-  // 2. Pilih Meta Kategori "Makanan"
+  // 2. Klik Meta Kategori "Makanan"
   const metaMakanan = page.locator('text="Makanan"').first();
   await metaMakanan.click();
-
-  // Tunggu navigasi selesai + lolos Cloudflare jika muncul lagi
   await page.waitForLoadState('domcontentloaded');
   await tungguLolosCloudflare(page);
 
-  // 3. Pilih kategori "Madu" — coba berbagai selector & scroll jika perlu
-  // Gunakan partial match (has-text) agar lebih toleran terhadap variasi teks
-  const katMadu = page.locator('a:has-text("Madu"), span:has-text("Madu"), li:has-text("Madu")').first();
+  // 3. Navigasi langsung ke sub-kategori Madu
+  await page.goto('https://www.klikindomaret.com/xpress/category/makanan/sarapan-selai/madu', {
+    waitUntil: 'domcontentloaded',
+  });
+  await tungguLolosCloudflare(page);
+  await page.waitForTimeout(3000);
 
-  // Scroll ke bawah perlahan agar konten lazy-load tampil
+  // 4. Pilih produk Madu pertama:
+  //    Link produk = /xpress/<slug-produk> (tanpa "/category/" di dalamnya)
+  const produkMadu = page.locator('a.cursor-pointer[href*="/xpress/"]:not([href*="/category/"])').first();
+
+  // Scroll agar produk lazy-load tampil
   for (let i = 0; i < 5; i++) {
-    const visible = await katMadu.isVisible().catch(() => false);
+    const visible = await produkMadu.isVisible().catch(() => false);
     if (visible) break;
-    await page.mouse.wheel(0, 300);
-    await page.waitForTimeout(800);
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(1000);
   }
 
-  await katMadu.waitFor({ timeout: 30000 });
-  await katMadu.scrollIntoViewIfNeeded();
-  await katMadu.click();
+  await produkMadu.waitFor({ state: 'visible', timeout: 30000 });
+  await produkMadu.scrollIntoViewIfNeeded();
 
-  // Tunggu navigasi ke halaman produk Madu
-  await page.waitForLoadState('domcontentloaded');
-  await tungguLolosCloudflare(page);
-
-  // 4 & 5. Pilih salah satu produk Madu & Masuk ke detail produk
-  const produkMadu = page.locator('.item-product, .product-collection, a[href*="/product/"]').first();
-  await produkMadu.waitFor({ timeout: 30000 });
+  // 5. Masuk ke detail produk
   await produkMadu.click({ force: true });
-
-  // Tunggu halaman detail produk load
   await page.waitForLoadState('domcontentloaded');
   await tungguLolosCloudflare(page);
+  await page.waitForTimeout(3000);
 
-  // 6. Klik button "+ Keranjang"
-  const btnKeranjang = page.locator('button:has-text("Keranjang"), .btn-cart, button:has-text("+ Keranjang")').first();
-  await expect(btnKeranjang).toBeVisible({ timeout: 15000 });
+  // 6. Klik button "Keranjang"
+  //    Hasil inspeksi: <button class="bg-primary ...">Keranjang</button>
+  const btnKeranjang = page.locator('button.bg-primary, button:has-text("Keranjang")').first();
+
+  await expect(btnKeranjang).toBeVisible({ timeout: 20000 });
+  await btnKeranjang.scrollIntoViewIfNeeded();
   await btnKeranjang.click({ force: true });
+
+  // Verifikasi berhasil ditambahkan ke keranjang
+  await page.waitForTimeout(2000);
+  console.log('✅ Produk Madu berhasil ditambahkan ke keranjang!');
+  console.log('URL produk:', page.url());
 });
