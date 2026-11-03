@@ -96,8 +96,28 @@ test('Automation Klik Indomaret - Tambah Madu ke Keranjang', async ({ page }) =>
   await btnKeranjang.scrollIntoViewIfNeeded();
   await btnKeranjang.click({ force: true });
 
-  // Verifikasi berhasil ditambahkan ke keranjang
-  await page.waitForTimeout(2000);
+  // 7. Verifikasi hasil: setelah tombol "Keranjang" diklik, salah satu
+  //    indikator sukses harus tampil. Selector dibuat longgar (union)
+  //    agar tidak rapuh terhadap perubahan class name.
+  const indikatorKeranjang = page
+    .locator(
+      [
+        '[data-testid*="cart" i]',
+        '[class*="cart-badge" i]',
+        '[class*="cart-count" i]',
+        '[class*="mini-cart" i]',
+        'a[href*="cart" i] span',
+        'button[aria-label*="cart" i] span',
+        'text=/berhasil ditambahkan|masuk keranjang|added to cart/i',
+      ].join(', ')
+    )
+    .first();
+
+  await expect(
+    indikatorKeranjang,
+    'Indikator keranjang tidak muncul setelah klik "Keranjang" - periksa screenshot di test-results/ lalu rapatkan selector di langkah 7'
+  ).toBeVisible({ timeout: 15000 });
+
   console.log('✅ Produk Madu berhasil ditambahkan ke keranjang!');
   console.log('URL produk:', page.url());
 });

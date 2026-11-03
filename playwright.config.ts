@@ -1,38 +1,28 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
- * See https://playwright.dev/docs/test-configuration.
+ * Konfigurasi test automation Klik Indomaret.
+ *
+ * Catatan: situs target dilindungi Cloudflare, sehingga
+ *   - lokal : dijalankan headed (challenge dilewati manual oleh manusia)
+ *   - CI    : headless, dan tests/klikindomaret.spec.ts di-skip
  */
 export default defineConfig({
   testDir: './tests',
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  // Gagal di CI kalau masih ada test.only yang tertinggal di source
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
+  // Retry hanya di CI
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
+  // Di CI pakai 1 worker agar laporan stabil
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  reporter: [['html'], ['list']],
   use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    actionTimeout: 30_000,
+    viewport: { width: 1280, height: 720 },
   },
-
-  /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
@@ -43,48 +33,18 @@ export default defineConfig({
         // Lokal: headed (perlu melewati challenge Cloudflare)
         // CI (Linux, tanpa layar): wajib headless agar Chrome bisa jalan
         headless: !!process.env.CI,
-        viewport: { width: 1280, height: 720 },
         launchOptions: {
           args: ['--disable-blink-features=AutomationControlled'],
         },
       },
     },
-
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });

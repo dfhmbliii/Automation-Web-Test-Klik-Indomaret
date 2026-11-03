@@ -1,11 +1,24 @@
 {
-  "name": "playwright",
+  "name": "automation-web-test-klik-indomaret",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {},
-  "keywords": [],
-  "author": "",
+  "description": "End-to-end test automation for klikindomaret.com using Playwright and TypeScript, with GitHub Actions CI",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:chromium": "playwright test --project=chromium",
+    "report": "playwright show-report",
+    "install:browsers": "playwright install --with-deps"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "e2e-testing",
+    "test-automation",
+    "github-actions",
+    "cloudflare"
+  ],
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.64.1",
